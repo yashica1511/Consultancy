@@ -15,6 +15,12 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 
+app.use("/api/protected", require("./routes/protectedRoutes"));
+
+app.use("/api/dashboard", require("./routes/dashboardRoutes"));
+
+app.use("/api/invoices", require("./routes/invoiceRoutes"));
+
 // Test route
 app.get("/", (req, res) => {
   res.send("API is running...");

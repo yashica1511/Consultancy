@@ -12,6 +12,7 @@ export default function LoginPage() {
 
   const [registerMessage, setRegisterMessage] = useState("");
   const [registerMessageColor, setRegisterMessageColor] = useState("green");
+  const [passwordFocus, setPasswordFocus] = useState(false);
 
   // Separate forms
   const {
@@ -28,6 +29,14 @@ export default function LoginPage() {
     reset: resetRegister,
   } = useForm();
 
+  const [passwordValidations, setPasswordValidations] = useState({
+    length: false,
+    lowercase: false,
+    uppercase: false,
+    number: false,
+    specialChar: false,
+  });
+
   const onLogin = async (data) => {
     setLoginMessage("");
     try {
@@ -36,12 +45,20 @@ export default function LoginPage() {
         password: data.password,
       };
       const response = await loginUser(loginData);
-      console.log("Login Data:", response);
+  
+      // Assuming response has a token and user
+      const token = response.token;
+  
+      const expiryTime = Date.now() + 60 * 60 * 1000; // current time + 1 hour
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(response.user));
+      localStorage.setItem("tokenExpiry", expiryTime);
+  
       setLoginMessage("Login successful!");
       setLoginMessageColor("green");
-      localStorage.setItem("user", JSON.stringify(response.user));
+  
       resetLogin();
-
+  
       setTimeout(() => {
         navigate("/dashboard");
       }, 1000);
@@ -50,6 +67,7 @@ export default function LoginPage() {
       setLoginMessageColor("red");
     }
   };
+  
 
   const onRegister = async (data) => {
     setRegisterMessage("");
@@ -79,6 +97,19 @@ export default function LoginPage() {
       setRegisterMessageColor("red");
     }
   };
+
+
+  const checkPasswordRules = (password) => {
+    const validations = {
+      length: password.length >= 6 && password.length <= 12,
+      lowercase: /[a-z]/.test(password),
+      uppercase: /[A-Z]/.test(password),
+      number: /[0-9]/.test(password),
+      specialChar: /[^A-Za-z0-9]/.test(password),
+    };
+    setPasswordValidations(validations);
+  };
+  
 
   return (
     <div className="bg-gray-100 min-h-screen flex items-center justify-center overflow-hidden">
@@ -206,24 +237,46 @@ export default function LoginPage() {
                   )}
                 </div>
 
-                <div className="mb-4">
+                <div className="mb-4 relative">
                   <label className="block text-sm font-medium text-gray-700">Password</label>
-                  <input
-                    type="password"
-                    {...regRegister("password", {
-                      required: "Password must be at least 6 characters",
-                      minLength: {
-                        value: 6,
-                        message: "Password must be at least 6 characters",
-                      },
-                    })}
-                    className="mt-1 w-full border border-gray-300 rounded-md p-2"
-                    placeholder="Create a password"
-                  />
-                  {registerErrors.password && (
-                    <p className="text-red-500 text-sm mt-1">{registerErrors.password.message}</p>
-                  )}
-                </div>
+                    <input
+                      type="password"
+                        {...regRegister("password", {
+                          required: "Password must be between 6–12 characters",
+                          validate: (value) => {
+                            const isValid = 
+                              /[a-z]/.test(value) &&
+                              /[A-Z]/.test(value) &&
+                              /[0-9]/.test(value) &&
+                              /[^A-Za-z0-9]/.test(value) &&
+                              value.length >= 6 && value.length <= 12;
+                            return isValid || "Password does not meet all requirements";
+                          }
+                        })}
+                        onFocus={() => setPasswordFocus(true)}
+                        onBlur={() => setPasswordFocus(false)}
+                        onChange={(e) => {
+                          regRegister("password").onChange(e);
+                          checkPasswordRules(e.target.value);
+                        }}
+                        className="mt-1 w-full border border-gray-300 rounded-md p-2"
+                        placeholder="Create a password"
+                      />
+                      {registerErrors.password && (
+                        <p className="text-red-500 text-sm mt-1">{registerErrors.password.message}</p>
+                      )}
+
+                      {passwordFocus && (
+                        <div className="mt-2 text-sm">
+                          <p className={`${passwordValidations.length ? "text-green-600" : "text-red-500"}`}>• 6–12 characters</p>
+                          <p className={`${passwordValidations.lowercase ? "text-green-600" : "text-red-500"}`}>• At least one lowercase letter</p>
+                          <p className={`${passwordValidations.uppercase ? "text-green-600" : "text-red-500"}`}>• At least one uppercase letter</p>
+                          <p className={`${passwordValidations.number ? "text-green-600" : "text-red-500"}`}>• At least one number</p>
+                          <p className={`${passwordValidations.specialChar ? "text-green-600" : "text-red-500"}`}>• At least one special character</p>
+                        </div>
+                      )}
+                    </div>
+
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
