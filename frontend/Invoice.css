@@ -1,0 +1,134 @@
+.invoice-container {
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 24px;
+    background-color: white;
+    color: black;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    border: 1px solid #ccc;
+  }
+  
+  .text-center {
+    text-align: center;
+  }
+  
+  .text-right {
+    text-align: right;
+  }
+  
+  .small {
+    font-size: 13px;
+  }
+  
+  .bold {
+    font-weight: bold;
+  }
+  
+  .mt {
+    margin-top: 8px;
+  }
+  
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  
+  .title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    text-decoration: underline;
+    margin: 8px 0;
+  }
+  
+  .subtitle {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  
+  .address-box {
+    border: 1px solid black;
+    padding: 8px;
+    margin: 12px 0;
+  }
+  
+  .invoice-details {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: 1px solid black;
+    font-size: 13px;
+  }
+  
+  .invoice-details > div {
+    border-right: 1px solid black;
+    border-bottom: 1px solid black;
+    padding: 6px;
+  }
+  
+  .invoice-details .full-width {
+    grid-column: span 4;
+  }
+  
+  .table-header,
+  .table-row {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr 1fr 1fr 1fr;
+    border: 1px solid black;
+    text-align: center;
+    font-size: 13px;
+  }
+  
+  .table-header > div,
+  .table-row > div {
+    border-right: 1px solid black;
+    padding: 6px;
+  }
+  
+  .table-row > div:nth-child(2) {
+    text-align: left;
+  }
+  
+  .material-list {
+    padding-left: 10px;
+    margin-top: 4px;
+  }
+  
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 12px;
+    gap: 10px;
+  }
+  
+  .delivery-box,
+  .total-box {
+    border: 1px solid black;
+    padding: 10px;
+  }
+  
+  .amount-words {
+    margin-top: 14px;
+  }
+  
+  .amount-divider {
+    border: none;
+    border-top: 1px solid black;
+    margin: 10px 0 20px;
+  }
+  
+  .bank-info {
+    margin-top: 8px;
+    font-size: 13px;
+  }
+  
+  .signature-box {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    font-size: 13px;
+  }
+  
