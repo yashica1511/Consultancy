@@ -10,7 +10,7 @@ export default function ProtectedRoute({ children }) {
     const checkAuth = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
-        navigate("/login");
+        navigate("/");
         return;
       }
 
@@ -21,13 +21,13 @@ export default function ProtectedRoute({ children }) {
 
         if (!response.ok) {
           localStorage.removeItem("token");
-          navigate("/login");
+          navigate("/");
         } else {
           setAuthChecked(true);
         }
       } catch (error) {
         console.error("Auth check failed", error);
-        navigate("/login");
+        navigate("/");
       }
     };
 
