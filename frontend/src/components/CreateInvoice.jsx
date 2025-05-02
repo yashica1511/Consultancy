@@ -1,10 +1,6 @@
 import { useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import {
-  FaFileInvoiceDollar,
-  FaUsers,
-  FaMoneyBillWave,
-  FaClock,
   FaBars,
   FaArrowLeft,
 } from "react-icons/fa";
@@ -354,7 +350,6 @@ export default function CreateInvoice() {
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-4">
             <button onClick={saveInvoice} className="bg-green-600 text-white px-6 py-2 rounded">Save</button>
-            <button onClick={() => setShowPreview(true)} className="bg-blue-600 text-white px-6 py-2 rounded">Preview</button>
           </div>
 
           {/* Preview Modal */}

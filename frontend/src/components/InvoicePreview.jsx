@@ -1,180 +1,180 @@
-import React from "react";
-import PropTypes from "prop-types";
+import React, { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import html2pdf from 'html2pdf.js';
 
-// Error Boundary Component
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
+export default function InvoicePreview() {
+  const invoiceRef = useRef();
+  const navigate = useNavigate();
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
+  const handleDownload = () => {
+    const element = invoiceRef.current;
+    const opt = {
+      margin: 0,
+      filename: 'invoice.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 4,
+        useCORS: true,
+        scrollX: 0,
+        scrollY: 0,
+      },
+      jsPDF: { unit: 'px', format: [794, 1123], orientation: 'portrait' },
+    };
 
-  componentDidCatch(error, info) {
-    console.error('Error in InvoicePreview component:', error, info);
-  }
+    html2pdf().set(opt).from(element).save();
+  };
 
-  render() {
-    if (this.state.hasError) {
-      return <h1>Something went wrong. Please try again later.</h1>;
-    }
-
-    return this.props.children;
-  }
-}
-
-export default function InvoicePreview({ data }) {
-  // Ensure data is provided and has a valid structure
-  if (!data || !Array.isArray(data.items)) {
-    return <h1>Error: Invalid data structure.</h1>;
-  }
-
-  const subtotal = data.items.reduce((sum, item) => sum + item.quantity * item.rate, 0);
-  const gstAmount = data.gstType === "intra" ? subtotal * 0.09 * 2 : subtotal * 0.18;
-  const roundOff = parseFloat(data.roundOff) || 0;
-  const total = subtotal + gstAmount + roundOff;
+  const handleBack = () => {
+    navigate('/create-invoice');
+  };
 
   return (
-    <div className="bg-white text-sm text-gray-800 p-6 max-w-5xl mx-auto border shadow">
-      <div className="text-center mb-4">
-        <h2 className="text-xl font-bold">AARA INFRAA</h2>
-        <p># 49/1,S.Medahalli, Sarjapura Road, Attibele, Bangalore-07</p>
-        <p>Email: aarainfraa@gmail.com</p>
-        <div className="flex justify-between mt-2 border-t pt-2 text-xs">
-          <div>
-            <p>GSTIN: 29HOWPS4461A1ZA</p>
-            <p>State Code: 29</p>
+    <div className="bg-gray-100 min-h-screen">
+      {/* Navbar */}
+      <nav className="flex items-center justify-between bg-blue-700 text-white px-4 py-3 shadow">
+        <button
+          onClick={handleBack}
+          className="text-white text-lg font-semibold hover:text-gray-300 transition"
+        >
+          ← Back
+        </button>
+        <h1 className="text-xl font-semibold">Invoice Preview</h1>
+        <div className="w-16" /> {/* Placeholder to balance layout */}
+      </nav>
+
+      {/* Invoice Section */}
+      <div className="flex flex-col items-center py-10">
+        <div
+          ref={invoiceRef}
+          className="bg-white text-black text-sm border border-gray-300 p-6"
+          style={{
+            width: "794px",
+            minHeight: "1123px",
+            boxSizing: "border-box",
+          }}
+        >
+          {/* Header */}
+          <div className="flex justify-between mb-2">
+            <div>
+              <p className="text-xs">GSTIN : 29HOWPS4461A1ZA</p>
+              <p className="text-xs">State Code : 29</p>
+            </div>
+            <div className="text-right text-xs">
+              <p>Cell : 99429 34940</p>
+              <p>96204 01974</p>
+            </div>
           </div>
-          <div className="text-right">
-            <p>Cell: 99429 34940</p>
-            <p>96240 01974</p>
+
+          <h1 className="text-center text-xl font-bold underline my-2">TAX INVOICE</h1>
+          <h2 className="text-center text-lg font-bold mb-1">AARA INFRAA</h2>
+          <p className="text-center text-xs"># 49/1, S.Medahalli, Sarjapura Road, Attibele, Bangalore-07</p>
+          <p className="text-center text-xs">Email : aarainfraa@gmail.com</p>
+
+          {/* Address */}
+          <div className="border border-black p-2 my-3">
+            <p className="font-bold">To M/s</p>
+            <p>Sri Hamshini and Chandra Enterprises</p>
+            <p>Park Street, 49/244 Surya Nagar Colony,</p>
+            <p>Uppal, Hyderabad, Telangana-533339</p>
+          </div>
+
+          {/* Invoice Details */}
+          <div className="grid grid-cols-4 border border-black text-xs">
+            <div className="border-r border-b border-black p-1">Invoice No</div>
+            <div className="border-r border-b border-black p-1">51</div>
+            <div className="border-r border-b border-black p-1">Date</div>
+            <div className="border-b border-black p-1">19.03.2025</div>
+            <div className="border-r border-b border-black p-1">Your PO No</div>
+            <div className="border-r border-b border-black p-1">Date</div>
+            <div className="border-r border-b border-black p-1">Our DC No</div>
+            <div className="border-b border-black p-1">Date</div>
+            <div className="border-r border-b border-black p-1">Vendor Code</div>
+            <div className="border-r border-b border-black p-1">Vehicle No</div>
+            <div className="border-r border-b border-black p-1">GST IN</div>
+            <div className="border-b border-black p-1">36BAZPC4689M1ZO</div>
+            <div className="col-span-4 border-t border-black p-1">Eway Bill No</div>
+          </div>
+
+          {/* Table Header */}
+          <div className="grid grid-cols-[60px_1fr_110px_100px_100px_110px] border border-black text-xs">
+            <div className="border-r p-1">Sl No</div>
+            <div className="border-r p-1">Description</div>
+            <div className="border-r p-1">HSN SAC CODE</div>
+            <div className="border-r p-1">Quantity</div>
+            <div className="border-r p-1">Rate</div>
+            <div className="p-1">Amount</div>
+          </div>
+
+          {/* Table Row */}
+          <div className="grid grid-cols-[60px_1fr_110px_100px_100px_110px] border border-black text-xs">
+            <div className="border-r p-1 text-center">1</div>
+            <div className="border-r p-1 text-left">
+              <p className="font-bold">Supply and Manufacturing of UPVC KISOK</p>
+              <div className="pl-2 mt-1">
+                <p>UPVC Windows - 12 nos</p>
+                <p>UPVC Pannels - 85 nos</p>
+                <p>MS Pipes - 30 nos</p>
+                <p>Roofing Sheets - 6 nos</p>
+                <p>Gutters - 9 nos</p>
+                <p>With Electrical items</p>
+              </div>
+            </div>
+            <div className="border-r p-1 text-center">3925</div>
+            <div className="border-r p-1 text-center">1 Set</div>
+            <div className="border-r p-1 text-center">330000.00</div>
+            <div className="p-1 text-center">330000.00</div>
+          </div>
+
+          {/* Delivery & Total */}
+          <div className="grid grid-cols-2 gap-3 mt-3">
+            <div className="border border-black p-3 text-xs">
+              <p>Delivery Address</p>
+              <p className="font-bold mt-2">Swayambu Shambu Lingeshwara Temple</p>
+              <p>Mellacheruvu, Suryapet,</p>
+              <p>Telangana - 508246</p>
+            </div>
+            <div className="border border-black p-3 text-xs">
+              <p>Total: ₹330000.00</p>
+              <p>CGST %: 0</p>
+              <p>SGST %: 0</p>
+              <p>IGST %: ₹59400</p>
+              <p className="font-bold">Grand Total: ₹389400.00</p>
+            </div>
+          </div>
+
+          {/* Amount in words */}
+          <p className="mt-4 text-xs">
+            Rupees: <strong>Three Lakh's Eightynine thousand and Four hundred Rupees Only</strong>
+          </p>
+
+          <hr className="border-t border-black my-4" />
+
+          {/* Bank Info */}
+          <div className="text-xs space-y-1">
+            <p><span className="font-bold">Bank Name</span>: KARUR VYSYS BANK (Hosur Branch)</p>
+            <p><span className="font-bold">Account Name</span>: AARA INFRAA</p>
+            <p><span className="font-bold">A/c No.</span>: 160714000000012</p>
+            <p><span className="font-bold">IFSC</span>: KVBL0001607</p>
+          </div>
+
+          {/* Signatures */}
+          <div className="flex justify-between mt-8 text-xs">
+            <p>Receivers Signature with company Seal</p>
+            <div className="text-right">
+              <p>For AARA INFRAA</p>
+              <p className="mt-2">Authorised Signature</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="border mb-4 p-2">
-        <p><strong>To M/S</strong>: {data.client.name}</p>
-        <p>{data.client.address}</p>
-        <p>GSTIN: {data.client.gstin}</p>
-      </div>
-
-      <div className="grid grid-cols-2 text-xs border mb-4">
-        <div className="p-2 border-r">
-          <p><strong>Invoice No</strong>: {data.invoiceNo}</p>
-          <p><strong>Your PO No</strong>: {data.buyerOrderNo || "-"}</p>
-          <p><strong>Our DC No</strong>: {data.referenceNo || "-"}</p>
-          <p><strong>Vendor Code</strong>: -</p>
-          <p><strong>Vehicle No</strong>: -</p>
-        </div>
-        <div className="p-2">
-          <p><strong>Date</strong>: {data.date}</p>
-          <p><strong>Date</strong>: -</p>
-          <p><strong>Date</strong>: -</p>
-          <p><strong>Eway Bill No</strong>: -</p>
-        </div>
-      </div>
-
-      <table className="w-full table-fixed border text-xs">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="border p-1 w-6">Sl No</th>
-            <th className="border p-1">Description</th>
-            <th className="border p-1">HSN/SAC Code</th>
-            <th className="border p-1">Quantity</th>
-            <th className="border p-1">Rate</th>
-            <th className="border p-1">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.items.map((item, idx) => (
-            <tr key={idx}>
-              <td className="border p-1 text-center">{idx + 1}</td>
-              <td className="border p-1">{item.description}</td>
-              <td className="border p-1 text-center">{item.hsn}</td>
-              <td className="border p-1 text-center">{item.quantity}</td>
-              <td className="border p-1 text-right">{item.rate.toFixed(2)}</td>
-              <td className="border p-1 text-right">{(item.quantity * item.rate).toFixed(2)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div className="mt-2 text-xs">
-        <p><strong>Delivery Address</strong>:</p>
-        <p>{data.deliveryAddress}</p>
-      </div>
-
-      <div className="grid grid-cols-2 text-xs mt-4">
-        <div>
-          <p className="mb-2 font-medium">Rupees: <span className="italic">{total.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })} only</span></p>
-          <p className="mb-2">Bank Name: KARUR VYSYS BANK (Hosur Branch)</p>
-          <p>Account Name: AARA INFRAA</p>
-          <p>A/c No.: 160714000000012</p>
-          <p>IFSC: KVBL0001607</p>
-        </div>
-        <div className="text-right">
-          <table className="w-full table-fixed border text-xs">
-            <tbody>
-              {data.gstType === "intra" && (
-                <>
-                  <tr>
-                    <td className="border p-1">CGST</td>
-                    <td className="border p-1">9%</td>
-                    <td className="border p-1 text-right">{(subtotal * 0.09).toFixed(2)}</td>
-                  </tr>
-                  <tr>
-                    <td className="border p-1">SGST</td>
-                    <td className="border p-1">9%</td>
-                    <td className="border p-1 text-right">{(subtotal * 0.09).toFixed(2)}</td>
-                  </tr>
-                </>
-              )}
-              {data.gstType === "inter" && (
-                <tr>
-                  <td className="border p-1">IGST</td>
-                  <td className="border p-1">18%</td>
-                  <td className="border p-1 text-right">{(subtotal * 0.18).toFixed(2)}</td>
-                </tr>
-              )}
-              <tr>
-                <td className="border p-1 font-semibold" colSpan="2">Grand Total</td>
-                <td className="border p-1 font-semibold text-right">{total.toFixed(2)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="flex justify-between text-xs mt-8">
-        <p>Receivers Signature with company Seal</p>
-        <p><strong>Authorised Signature</strong></p>
+        {/* Download Button */}
+        <button
+          onClick={handleDownload}
+          className="mt-6 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
+        >
+          Download Invoice as PDF
+        </button>
       </div>
     </div>
-  );
-}
-
-// Prop Types Validation
-InvoicePreview.propTypes = {
-  data: PropTypes.shape({
-    items: PropTypes.array.isRequired,
-    gstType: PropTypes.string.isRequired,
-    roundOff: PropTypes.string,
-    client: PropTypes.object.isRequired,
-    invoiceNo: PropTypes.string.isRequired,
-    buyerOrderNo: PropTypes.string,
-    referenceNo: PropTypes.string,
-    deliveryAddress: PropTypes.string.isRequired,
-    date: PropTypes.string.isRequired,
-  }).isRequired,
-};
-
-// Wrapping InvoicePreview in ErrorBoundary
-export function InvoicePreviewWithErrorBoundary({ data }) {
-  return (
-    <ErrorBoundary>
-      <InvoicePreview data={data} />
-    </ErrorBoundary>
   );
 }
