@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const ItemSchema = new mongoose.Schema({
   description: String,
-  hsnOrSac: String,
+  hsnCode: String,
   quantity: Number,
   rate: Number,
   per: String,
@@ -25,7 +25,7 @@ const InvoiceSchema = new mongoose.Schema({
   deliveryNoteDate: Date,
   despatchedThrough: String,
   destination: String,
-
+  
   clientName: { type: String, required: true },
   clientAddress: String,
   clientGSTIN: String,

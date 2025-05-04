@@ -25,7 +25,7 @@ export default function CreateInvoice() {
     gstType: "intra",
     handlingCharges: 0,
     roundOff: 0,
-    items: [{ description: "", quantity: 1, rate: 0, hsn: "" }],
+    items: [{ description: "", quantity: 1, rate: 0, hsnCode: "" }],
   });
   const [showPreview, setShowPreview] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
@@ -38,7 +38,7 @@ export default function CreateInvoice() {
         description: product.name,
         quantity: 1, 
         rate: product.rate, 
-        hsn: product.hsnCode 
+        hsnCode: product.hsnCode 
       }],
     }));
   };
@@ -80,7 +80,7 @@ export default function CreateInvoice() {
   const transformData = () => {
     const items = invoiceData.items.map((item) => ({
       description: item.description,
-      hsnOrSac: item.hsn,
+      hsnCode: item.hsnCode,
       quantity: item.quantity,
       rate: item.rate,
       amount: item.quantity * item.rate,

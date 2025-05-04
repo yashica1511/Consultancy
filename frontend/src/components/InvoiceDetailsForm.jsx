@@ -77,7 +77,7 @@ const InvoiceDetailsForm = ({
                       ...prev,
                       items: [
                         ...prev.items,
-                        { description: "", quantity: 1, rate: 0, hsn: "" },
+                        { description: "", quantity: 1, rate: 0, hsnCode: "" },
                       ],
                     }));
                   }}
@@ -104,8 +104,8 @@ const InvoiceDetailsForm = ({
                 <td className="p-2">
                   <input
                     className="w-full border p-1 rounded"
-                    value={item.hsn}
-                    onChange={(e) => updateItem(index, "hsn", e.target.value)}
+                    value={item.hsnCode}
+                    onChange={(e) => updateItem(index, "hsnCode", e.target.value)}
                   />
                 </td>
                 <td className="p-2">

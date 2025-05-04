@@ -1,63 +1,20 @@
-import Client from "../models/Client.js";
-import Product from "../models/Product.js";
 import Invoice from "../models/Invoice.js";
 
 export const createInvoice = async (req, res) => {
   try {
-    const {
-      clientName,
-      clientGSTIN,
-      clientAddress,
-      clientState,
-      clientStateCode,
-      products // array of product items with name, hsnCode, rate, gstRate
-    } = req.body;
+    console.log("User ID from JWT:", req.user); // Check if user is attached correctly
 
-    let client = await Client.findOne({ gstin: clientGSTIN });
-
-    if (!client) {
-      client = new Client({
-        name: clientName,
-        address: clientAddress,
-        gstin: clientGSTIN,
-        state: clientState,
-        stateCode: clientStateCode
-      });
-      await client.save();
+    if (!req.user || !req.user._id) { // Fix: use _id instead of id
+      return res.status(400).json({ message: "User ID is missing or invalid." });
     }
 
-    const invoiceCount = await Invoice.countDocuments({ createdBy: req.user.id });
-    const invoiceNumber = `${invoiceCount + 1}`;
-
-    // Save new products to Product collection
-    for (const item of products) {
-      const existing = await Product.findOne({
-        name: item.name,
-        hsnCode: item.hsnCode,
-        rate: item.rate,
-        gstRate: item.gstRate
-      });
-
-      if (!existing) {
-        const newProduct = new Product({
-          name: item.name,
-          hsnCode: item.hsnCode,
-          rate: item.rate,
-          gstRate: item.gstRate
-        });
-        await newProduct.save();
-      }
-    }
+    const invoiceCount = await Invoice.countDocuments({ createdBy: req.user._id });
+    const invoiceNumber = `AARA-INV-${new Date().getFullYear()}-${String(invoiceCount + 1).padStart(3, '0')}`;
 
     const invoiceData = {
       ...req.body,
       invoiceNumber,
-      createdBy: req.user.id,
-      clientName: client.name,
-      clientAddress: client.address,
-      clientGSTIN: client.gstin,
-      clientState,
-      clientStateCode
+      createdBy: req.user._id,  // Use _id for createdBy
     };
 
     const newInvoice = new Invoice(invoiceData);
@@ -70,49 +27,71 @@ export const createInvoice = async (req, res) => {
   }
 };
 
-export const getInvoiceById = async (req, res) => {
-    try {
-      console.log("User from token:", req.user);
-      const invoice = await Invoice.findOne({
-        _id: req.params.id,
-        createdBy: req.user._id
-      });
-  
-      if (!invoice) {
-        return res.status(404).json({ message: "Invoice not found" });
-      }
-  
-      res.status(200).json(invoice);
-    } catch (err) {
-      console.error("Error fetching invoice:", err);
-      res.status(500).json({ message: "Server error" });
+
+
+export const getLatestInvoice = async (req, res) => {
+  try {
+    const latestInvoice = await Invoice.findOne()
+      .sort({ createdAt: -1 });
+      
+
+    if (!latestInvoice) {
+      return res.status(404).json({ message: "No invoices found." });
     }
-  };
-  
+
+    res.json(latestInvoice);
+  } catch (error) {
+    console.error("Error fetching latest invoice:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+};
+
+export const getInvoiceById = async (req, res) => {
+  try {
+    // Only use this if the ID is actually a valid ObjectId
+    const invoiceId = req.params.id;
+
+    if (invoiceId === "latest") {
+      return getLatestInvoice(req, res); // Calls the function to fetch the latest invoice
+    }
+
+    const invoice = await Invoice.findOne({
+      _id: invoiceId,
+      createdBy: req.user.id
+    });
+
+    if (!invoice) {
+      return res.status(404).json({ message: "Invoice not found" });
+    }
+
+    res.status(200).json(invoice);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 export const updateInvoice = async (req, res) => {
-    try {
-      console.log("Invoice ID from URL: ", req.params.id);
-      console.log("User ID from JWT: ", req.user.id);
+  try {
+    console.log("Invoice ID from URL: ", req.params.id);
+    console.log("User ID from JWT: ", req.user.id);
   
-      const updatedInvoice = await Invoice.findOneAndUpdate(
-        { 
-          _id: req.params.id,        // Match the invoice by ID
-          createdBy: req.user.id      // Ensure the invoice belongs to the logged-in user
-        },
-        req.body,                     // Fields to update
-        { new: true }                 // Return the updated document
-      );
+    const updatedInvoice = await Invoice.findOneAndUpdate(
+      { 
+        _id: req.params.id,        // Match the invoice by ID
+        createdBy: req.user.id      // Ensure the invoice belongs to the logged-in user
+      },
+      req.body,                     // Fields to update
+      { new: true }                 // Return the updated document
+    );
   
-      if (!updatedInvoice) {
-        return res.status(404).json({ message: "Invoice not found or not authorized" });
-      }
-  
-      res.status(200).json({ message: "Invoice updated", invoice: updatedInvoice });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Failed to update invoice", error: err.message });
+    if (!updatedInvoice) {
+      return res.status(404).json({ message: "Invoice not found or not authorized" });
     }
-  };
   
-  
+    res.status(200).json({ message: "Invoice updated", invoice: updatedInvoice });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to update invoice", error: err.message });
+  }
+};
