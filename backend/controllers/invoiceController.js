@@ -27,6 +27,26 @@ export const createInvoice = async (req, res) => {
   }
 };
 
+export const getAllInvoices = async (req, res) => {
+  try {
+    // Ensure that the user is properly authenticated and the user ID is accessible
+    console.log("Fetching invoices for user ID:", req.user._id);
+
+    // Query the database for invoices created by the authenticated user
+    const invoices = await Invoice.find({ createdBy: req.user._id }).sort({ createdAt: -1 });
+
+    // If no invoices are found, return a 404 response
+    if (!invoices.length) {
+      return res.status(404).json({ message: "No invoices found." });
+    }
+
+    // Return the invoices in the response
+    res.status(200).json(invoices);
+  } catch (err) {
+    console.error("Error fetching all invoices:", err); // Log the error for debugging
+    res.status(500).json({ message: "Failed to fetch invoices", error: err.message });
+  }
+};
 
 
 export const getLatestInvoice = async (req, res) => {
@@ -48,16 +68,21 @@ export const getLatestInvoice = async (req, res) => {
 
 export const getInvoiceById = async (req, res) => {
   try {
-    // Only use this if the ID is actually a valid ObjectId
     const invoiceId = req.params.id;
 
-    if (invoiceId === "latest") {
-      return getLatestInvoice(req, res); // Calls the function to fetch the latest invoice
+    if (invoiceId === "all") {
+      return getAllInvoices(req, res); // Fetch all invoices
     }
 
+    if (invoiceId === "latest") {
+      // Handle the "latest" case separately without querying by _id
+      return getLatestInvoice(req, res); // Fetch the latest invoice
+    }
+
+    // For other cases, find invoice by ID
     const invoice = await Invoice.findOne({
       _id: invoiceId,
-      createdBy: req.user.id
+      createdBy: req.user._id  // Ensure that the invoice belongs to the logged-in user
     });
 
     if (!invoice) {
@@ -70,6 +95,7 @@ export const getInvoiceById = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 export const updateInvoice = async (req, res) => {
   try {

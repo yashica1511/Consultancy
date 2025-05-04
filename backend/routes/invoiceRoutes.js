@@ -5,12 +5,14 @@ const {
   createInvoice,
   getLatestInvoice,
   getInvoiceById,
-  updateInvoice
+  updateInvoice,
+  getAllInvoices
 } = require("../controllers/invoiceController");
 
 router.post("/", auth, createInvoice);
 router.get("/:id", auth, getInvoiceById);
 router.put("/:id", auth, updateInvoice);
 router.get("/latest", auth, getLatestInvoice);
+router.get("/all", auth, getAllInvoices);
 
 module.exports = router;

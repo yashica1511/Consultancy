@@ -7,6 +7,8 @@ import CreateInvoice from './components/CreateInvoice';
 import InvoicePreview from './components/InvoicePreview';
 import Products from './components/Products';
 import Clients from './components/Clients';
+import InvoiceHistory from './components/InvoiceHistory';
+import InvoiceById from './components/InvoiceById';
 
 function App() {
   return (
@@ -36,6 +38,24 @@ function App() {
           element={
             <ProtectedRoute>
               <InvoicePreview /> 
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/invoice-history"
+          element={
+            <ProtectedRoute>
+              <InvoiceHistory /> 
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/invoice-preview/:id"
+          element={
+            <ProtectedRoute>
+              <InvoiceById /> 
             </ProtectedRoute>
           }
         />
