@@ -5,7 +5,6 @@ exports.createClient = async (req, res) => {
   try {
     const { clientName, clientGSTIN, clientAddress, clientState, clientStateCode } = req.body;
 
-    // Check if the client already exists in the database by GSTIN
     let existingClient = await Client.findOne({ gstin: clientGSTIN });
     if (existingClient) {
       return res.status(400).json({ message: "Client with this GSTIN already exists" });

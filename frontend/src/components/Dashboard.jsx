@@ -7,8 +7,10 @@ import {
   FaBars,
   FaArrowLeft,
 } from "react-icons/fa";
+import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import Sidebar from "@/components/Sidebar";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -30,8 +32,10 @@ export default function Dashboard() {
         });
         const data = await response.json();
         setStats({
-          ...data,
-          totalRevenue: Number(data.totalRevenue || 0), 
+          totalInvoices: data.totalInvoices || 0,
+          totalRevenue: Number(data.totalRevenue || 0),
+          totalClients: data.totalClients || 0,
+          recentInvoices: data.recentInvoices || [],
         });
         setLoading(false);
       } catch (error) {
@@ -44,27 +48,37 @@ export default function Dashboard() {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="animate-pulse text-center space-y-2">
+          <div className="w-20 h-20 bg-blue-500 rounded-full mx-auto"></div>
+          <p className="text-gray-600">Loading Dashboard...</p>
+        </div>
+      </div>
+    );
   }
 
+  const chartData = stats.recentInvoices.map((inv) => ({
+    name: inv.invoiceNumber,
+    amount: inv.totalAmountAfterTax,
+  }));
+
   return (
-    <div className="flex">
+    <div className="flex bg-blue-50 min-h-screen">
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-md transform transition-transform duration-300 ease-in-out 
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-        md:translate-x-0 md:relative md:block`}
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-blue-800 to-blue-900 text-white transform transition-transform duration-300 ease-in-out 
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} 
+          md:translate-x-0 md:relative md:block`}
       >
-        {/* Mobile view Back button */}
         <div className="md:hidden flex justify-end p-4">
-          <button onClick={() => setSidebarOpen(false)} className="text-gray-600">
+          <button onClick={() => setSidebarOpen(false)} className="hover:text-blue-200">
             <FaArrowLeft size={20} />
           </button>
         </div>
         <Sidebar />
       </div>
 
-      {/* Sidebar Overlay (mobile only) */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-25 z-40 md:hidden"
@@ -73,91 +87,132 @@ export default function Dashboard() {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 p-6 md:p-10 bg-gray-50 min-h-screen">
-        {/* Mobile Menu Button */}
-        <div className="md:hidden mb-4">
-          <button onClick={() => setSidebarOpen(true)} className="text-gray-700">
-            <FaBars size={24} />
-          </button>
-        </div>
-
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Dashboard</h1>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          <Card className="shadow-md">
-            <CardContent className="flex flex-col items-start gap-2 p-5">
-              <FaFileInvoiceDollar className="text-3xl text-blue-600" />
-              <p className="text-sm text-gray-500">Total Invoices</p>
-              <p className="text-2xl font-bold text-gray-800">{stats.totalInvoices}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-md">
-            <CardContent className="flex flex-col items-start gap-2 p-5">
-              <FaMoneyBillWave className="text-3xl text-green-600" />
-              <p className="text-sm text-gray-500">Total Revenue</p>
-              <p className="text-2xl font-bold text-gray-800">
-                ₹ {stats.totalRevenue ? stats.totalRevenue.toLocaleString("en-IN", { minimumFractionDigits: 2 }) : "0.00"}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-md">
-            <CardContent className="flex flex-col items-start gap-2 p-5">
-              <FaUsers className="text-3xl text-purple-600" />
-              <p className="text-sm text-gray-500">Total Clients</p>
-              <p className="text-2xl font-bold text-gray-800">{stats.totalClients}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-md">
-            <CardContent className="flex flex-col items-start gap-2 p-5">
-              <FaClock className="text-3xl text-orange-500" />
-              <p className="text-sm text-gray-500">Recent Invoices</p>
-              <p className="text-2xl font-bold text-gray-800">{stats.recentInvoices.length}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Invoices Table */}
-        <div className="bg-white p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">Recent Invoices</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full table-auto border-collapse text-left">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="p-3 border-b text-sm text-gray-600">Invoice #</th>
-                  <th className="p-3 border-b text-sm text-gray-600">Client</th>
-                  <th className="p-3 border-b text-sm text-gray-600">Date</th>
-                  <th className="p-3 border-b text-sm text-gray-600">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.recentInvoices.length > 0 ? (
-                  stats.recentInvoices.map((invoice) => (
-                    <tr key={invoice._id} className="hover:bg-gray-50">
-                      <td className="p-3 border-b text-sm">{invoice.invoiceNumber}</td>
-                      <td className="p-3 border-b text-sm">{invoice.clientName}</td>
-                      <td className="p-3 border-b text-sm">
-                        {invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleDateString("en-IN") : "-"}
-                      </td>
-                      <td className="p-3 border-b text-sm">
-                        ₹ {invoice.totalAmountAfterTax ? invoice.totalAmountAfterTax.toLocaleString("en-IN", { minimumFractionDigits: 2 }) : "0.00"}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="4" className="p-4 text-center text-gray-400">
-                      No recent invoices.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+      <div className="flex-1 overflow-hidden">
+        {/* Top Nav */}
+        <header className="bg-white shadow-md py-4 px-6 flex items-center justify-between sticky top-0 z-30">
+          <div className="flex items-center">
+            <button onClick={() => setSidebarOpen(true)} className="md:hidden mr-4 text-gray-600">
+              <FaBars size={20} />
+            </button>
+            <h1 className="text-xl font-bold text-blue-800">Dashboard</h1>
           </div>
-        </div>
+        </header>
+
+        {/* Dashboard */}
+        <main className="p-4 md:p-6 space-y-6">
+          {/* Stat Cards */}
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: { delay: 0.2 } }}
+          >
+            {/* Cards */}
+            {[
+              {
+                icon: <FaFileInvoiceDollar className="text-blue-600 text-xl" />,
+                title: "Total Invoices",
+                value: stats.totalInvoices,
+              },
+              {
+                icon: <FaMoneyBillWave className="text-green-600 text-xl" />,
+                title: "Total Revenue",
+                value: `₹${stats.totalRevenue.toLocaleString("en-IN")}`,
+              },
+              {
+                icon: <FaUsers className="text-purple-600 text-xl" />,
+                title: "Total Clients",
+                value: stats.totalClients,
+              },
+              {
+                icon: <FaClock className="text-orange-500 text-xl" />,
+                title: "Recent Invoices",
+                value: stats.recentInvoices.length,
+              },
+            ].map((stat, idx) => (
+              <motion.div
+                key={idx}
+                whileHover={{ scale: 1.03 }}
+                className="rounded-xl bg-white p-4 shadow-md border"
+              >
+                <div className="flex items-center space-x-3">
+                  {stat.icon}
+                  <div>
+                    <p className="text-sm text-gray-500">{stat.title}</p>
+                    <p className="text-xl font-semibold">{stat.value}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Chart */}
+          {chartData.length > 0 && (
+            <Card className="shadow-sm">
+              <CardContent>
+                <h2 className="text-lg font-bold mb-4 text-gray-700">Revenue Trend</h2>
+                <ResponsiveContainer width="100%" height={250}>
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="colorAmt" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Area
+                      type="monotone"
+                      dataKey="amount"
+                      stroke="#3b82f6"
+                      fillOpacity={1}
+                      fill="url(#colorAmt)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Recent Invoices Table */}
+          {stats.recentInvoices.length > 0 && (
+            <Card className="shadow-sm">
+              <CardContent className="p-0">
+                <div className="p-4 border-b">
+                  <h2 className="text-lg font-bold text-gray-700">Recent Invoices</h2>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-100 text-gray-600">
+                      <tr>
+                        <th className="p-3 text-left">Invoice #</th>
+                        <th className="p-3 text-left">Client</th>
+                        <th className="p-3 text-left">Date</th>
+                        <th className="p-3 text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {stats.recentInvoices.map((invoice) => (
+                        <tr key={invoice._id} className="hover:bg-gray-50">
+                          <td className="p-3 font-medium text-blue-600">{invoice.invoiceNumber}</td>
+                          <td className="p-3">{invoice.clientName}</td>
+                          <td className="p-3 text-gray-500">
+                            {new Date(invoice.invoiceDate).toLocaleDateString("en-IN")}
+                          </td>
+                          <td className="p-3 text-right font-semibold">
+                            ₹{invoice.totalAmountAfterTax?.toLocaleString("en-IN", {
+                              minimumFractionDigits: 2,
+                            }) || "0.00"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </main>
       </div>
     </div>
   );
