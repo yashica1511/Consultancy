@@ -25,5 +25,11 @@ app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
+// Global Error Handling Middleware
+app.use((err, req, res, next) => {
+  console.error(err);  // Log the error for debugging
+  res.status(500).json({ message: "Internal Server Error" });
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));

@@ -2,10 +2,14 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const User = require("../models/User");
 
-// Function to generate a token
+// JWT Configuration
+const JWT_SECRET = "your_jwt_secret_here"; // In production, use process.env.JWT_SECRET
+const TOKEN_EXPIRY = "1h";
+
+// Generate token
 const generateAuthToken = (user) => {
-  return jwt.sign({ id: user._id }, "your_jwt_secret", {
-    expiresIn: "1h",
+  return jwt.sign({ id: user._id }, JWT_SECRET, {
+    expiresIn: TOKEN_EXPIRY
   });
 };
 
@@ -13,32 +17,33 @@ const generateAuthToken = (user) => {
 exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
-  }
-
   try {
-    console.log("Login attempt:", email);
     const user = await User.findOne({ email });
+    
+    if (!user) {
+      return res.status(401).json({ success: false, message: "User not found" });
+    }
 
-    if (!user || user.password !== password) {
-      return res.status(401).json({ message: "Invalid credentials" });
+    // Direct password comparison (INSECURE)
+    if (user.password !== password) {
+      return res.status(401).json({ success: false, message: "Invalid password" });
     }
 
     const token = generateAuthToken(user);
 
-    res.status(200).json({
-      message: "Login successful",
+    return res.status(200).json({
+      success: true,
       token,
       user: {
         id: user._id,
         name: user.name,
-        email: user.email,
-      },
+        email: user.email
+      }
     });
-  } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({ message: "Server error", error: err.message });
+
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -46,33 +51,37 @@ exports.loginUser = async (req, res) => {
 exports.registerUser = async (req, res) => {
   const { name, email, password } = req.body;
 
-  if (!name || !email || !password) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
-
   try {
+    // Check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "Email already exists" });
+      return res.status(400).json({ success: false, message: "Email already exists" });
     }
 
-    const newUser = new User({ name, email, password }); // Save as plain text
+    // Create new user with plain text password (INSECURE)
+    const newUser = new User({
+      name,
+      email,
+      password // Stored in plain text
+    });
+
     await newUser.save();
 
     const token = generateAuthToken(newUser);
 
-    res.status(201).json({
-      message: "Registration successful",
+    return res.status(201).json({
+      success: true,
       token,
       user: {
         id: newUser._id,
         name: newUser.name,
-        email: newUser.email,
-      },
+        email: newUser.email
+      }
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error", error: err.message });
+
+  } catch (error) {
+    console.error("Registration error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

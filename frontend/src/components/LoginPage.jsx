@@ -26,21 +26,17 @@ export default function LoginPage() {
 
       const response = await loginUser(loginData);
 
-      const token = response.token;
-      const expiryTime = Date.now() + 60 * 60 * 1000;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(response.user));
-      localStorage.setItem("tokenExpiry", expiryTime);
+      localStorage.setItem("token", response.token);
+    localStorage.setItem("user", JSON.stringify(response.user));
+    localStorage.setItem("tokenExpiry", Date.now() + 60 * 60 * 1000);
 
       setLoginMessage("Login successful!");
       setLoginMessageColor("green");
 
-      reset();
-
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1000);
+      await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Then navigate
+    navigate("/dashboard");
     } catch (error) {
       setLoginMessage("Error: Invalid email or password.");
       setLoginMessageColor("red");
